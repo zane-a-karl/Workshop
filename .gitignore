@@ -1,0 +1,54 @@
+*~
+*.dSYM
+*.exe
+*.o
+*.out
+*.DS_Store
+*.lock
+**/target
+*.xcodeproj
+**/Assets.xcassets
+*AppDelegate.swift
+**/Base.lproj
+*.plist
+*.storyboard
+**/Sounds
+**/Solidity/build
+**/Solidity/migrations
+**/Solidity/test
+*/bin/main
+# OS Files
+.DS_Store
+*~
+
+# Build artifacts
+*.o
+*.out
+*.exe
+*.dSYM
+
+# Lock files
+*.lock
+
+# Node.js
+node_modules/
+package-lock.json
+
+# Rust
+**/target
+
+# Xcode
+*.xcodeproj
+**/Assets.xcassets
+*AppDelegate.swift
+**/Base.lproj
+*.plist
+*.storyboard
+
+# Project specific
+**/Sounds
+**/Solidity/build
+**/Solidity/migrations
+**/Solidity/test
+*/bin/main
+.env
