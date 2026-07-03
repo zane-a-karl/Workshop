@@ -1,0 +1,51 @@
+/** ECB OVERVIEW
+    Assume the BLOCK_LENGTH = 2
+
+    ENCRYPTION:
+              ----------------------------------------------
+    PTXT ---> |    P0    |    P1    |     P2    |    P3    |
+              ----------------------------------------------
+                   |          |           |          |
+                   |          |           |          |
+                 -----      -----       -----      -----
+                 |XOR|      |XOR|       |XOR|      |XOR|
+                 -----      -----       -----      -----
+                   |          |           |          |
+                   |          |           |          |
+                   V          V           V          V
+              ---------------------------------------------
+    KEY  ---> |    K0    |    K1    |    K0    |    K1    |
+              ---------------------------------------------
+                   |          |           |          |
+                   |          |           |          |
+                   V          V           V          V
+              ----------------------------------------------
+    CTXT ---> |    C0    |    C1    |     C2    |    C3    |
+              ----------------------------------------------
+                   |          |           |          |
+    DECRYPTION:    |          |           |          |
+                 -----      -----       -----      -----
+                 |XOR|      |XOR|       |XOR|      |XOR|
+                 -----      -----       -----      -----
+                   |          |           |          |
+                   |          |           |          |
+                   V          V           V          V
+              ---------------------------------------------
+    KEY  ---> |    K0    |    K1    |    K0    |    K1    |
+              ---------------------------------------------
+                   |          |           |          |
+                   |          |           |          |
+                   V          V           V          V
+              ----------------------------------------------
+    PTXT ---> |    P0    |    P1    |     P2    |    P3    |
+              ----------------------------------------------
+          
+    ECB ADVANTAGES:
+    - It is very fast because it can be easily parallelized.
+    - It is incredibly simple to implement.
+
+    ECB DISADVANTAGES:
+    - The same block of plaintext always maps to the same
+    block of ciphertext, so it is easily broken by a
+    frequency analysis attack.
+*/

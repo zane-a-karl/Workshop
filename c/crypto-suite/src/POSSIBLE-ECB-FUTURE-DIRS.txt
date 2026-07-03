@@ -1,0 +1,17 @@
+/** POSSIBLE DIRECTIONS TO TAKE THIS CODE
+ *
+ *  - FRIST AND FOREMOST:
+      - create easier testing env for str-inputs
+        - I'm not so sure I should care about str inputs at all...
+	- If anything I might allow for a flag that will specify that we're dealing with str inputs...maybe
+
+      - clean up str input code (e.g. rename functions)
+      - clean up file input code (e.g. give it a utils file)
+ *  - Maybe do a shared memory key and then socket io message
+ * test with ecb?
+ *
+ *  - Figure out how to deal with formatting cipher text that falls
+ *  in the 0 - 31 range because it messes with readability and makes
+ *  pretty much all of these encryptions a bit useless :(
+ *   - I have figured out what to do I am going to encode text as base64
+ */
