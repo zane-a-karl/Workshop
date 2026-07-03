@@ -1,0 +1,210 @@
+Some new things you learned:
+
+4. Manual Pages:
+
+  - You can search for keywords in manual pages with
+    - man -k <keyword>
+    - and it will list the pages with that word in them
+
+  - You can search for words while in a man page with
+    - /<test to search for>
+    - and press 'n' to move between them
+
+5. File Manipulation:
+
+  - The 'touch' cmd isn't for creating empty files
+    - It's actually for messing with the creation and
+    modification timestamps of a file
+    - We just use it cleverly because w/o args bash will
+    just crate a new file for us if it doesn't exist.
+
+  - The 'rm' cmd has a useful option that you shoudl use
+    - add '-i' for "interactive" to have the shell prompt
+    you about whether you are sure you'd like to remove
+    certain files.
+
+6. Vi:
+
+  - Use 'less <file>'
+    - 'Space bar' moves down a page.
+    - 'b' moves up a page.
+
+  - This caused you to look up ~ fcns in Emacs
+    - M-x display-line-numbers-mode will show line #s.
+    - M-{ moves forward a paragraph.
+    - M-} moves backward a paragraph.
+    - M-x set-variable display-line-numbers relative gives
+    the displacement of each line from the one you're on.
+    - M-x set-variable display-line-numbers nil turns it off.
+
+7. Wildcards:
+
+  - Along with '*' for 0 or more chars
+  - '?' means a single char
+  - [<subset>] means a subset of chars
+  - [<lower bd-upper bd>] means a range of chars
+  - [^<lower bd-upper bd>] means everything not in a range of chars
+  - [[:upper:]] checks whether a char is upper case
+
+8. Permissions:
+
+  - There is r, w, x for user, group, others.
+  - $ls -l <file> will show permissions
+    - if a line starts with a '-' it's a normal file
+    - if it starts with a 'd' it's a directory
+    - '-'s after that indicate an absense of a permission.
+
+  - chmod <permissions> <file>
+    - the permissions section can begin with any in [ugoa]
+      - user, group, others, all
+    - then it take a '+' if were authorizing and a '-' if deauthorizing.
+    - finally any in [rwx] to allot the chosen permissions.
+    - You can also use octal designations
+      - $chmod u+rwx <file> && chmod go+rx <==> $chmod 755 <file>
+    - Note: No Directories
+      - 'r' => you can run ls inside it
+      - 'w' => you can create files inside it
+      - 'x' => you can cd into it
+
+9. Filters:
+
+  - $nl <file>
+    - prints the whole file with lines numbered
+  - $wc <file>
+    - prints the <line, word, char> counts
+  - $cut -f <column, ...> -d '<delimiter>' <file>
+    - filters tabular data by column separated by <delimiter>
+  - $sed 'fcn;find_regex;replc_regex' <file>
+    - Normally fcn = 's' standing for regex replacement
+    - This won't change the actual file a different fcn is needed
+  - $uniq <file>
+     - will squash ADJACENT duplicate lines
+  - $tac <file>
+    - opposite of $cat
+    - doesn't exist natively on OSX
+    - $tail -r <file> <==> tac <file>
+  - $awk '<script>' <file>
+    - NOTE THIS IS BETTER THAN $cut 
+    - This will process the data according to the '<script>'
+    - e.g. '{print $2}'
+      - '{}' mean "This is an action"
+      - 'print' is the action
+      - '$2' is the column of data to print
+    - e.g. '$3 > 10 {print $1 " - " $2 " : " $3}'
+      - '$3 > 10' is a condition, i.e. the third column value > 10
+      - then there's another print action with additional text within
+      the print action specified with double "s.
+  - $diff <file1> <file2>
+    - output is read as follows:
+      - '<' refers to lines in <file1>
+      - '>' refers to lines in <file2>
+      - a = add, d = delete, c = change
+      - e.g. 3d2 => 3rd line from file1 was deleted and afterward the
+      line counter move back to line 2 of file2
+    - $diff -u <file>
+      - This prints unified format which is easier to read with
+      - '+'s mean additions and '-'s mean deletions
+      
+10. Grep and Regexes
+
+  - egrep <==> grep -E
+  - regex overview
+    - ^ matches start of expr
+    - $ matches end of expr
+    - . matches any character
+    - ? matches 0 or 1 chars
+    - * matches 0 or more chars
+    - + matches 1 or more chars
+    - [xyz] matches one from this group of chars
+    - [^xyz] matches one not from this group of chars
+    - [A-F] matches one in this range of chars
+    - {n} matches n consecutive chars
+    - {n,m} matches x consecutive chars with n<= x <= m
+    - () groups several chars to behave as one
+    - | logical or
+
+11. Piping and Redirection
+
+  - If you want to save both stdout and stderr to a file then use
+    - $<cmd> > <file> 2>&1
+    - we need the '&' otherwise this will print to a file named '1'
+  - how to get count of # of files you ahve x permission for in ~
+    - $ls -l ~ | grep '^...x' | wc -l
+
+12. Proc Management
+
+  - A prgm is a series of instr's
+  - To run a prgm those instr's are
+    - copied into memory (or interpretted into instr's then...)
+    - and space is alloc'd for variables and other things to
+    help facilitate execution
+  - This running instance of a prgm is called a proc
+
+  - Use a '&' at the end of a prgm to run it in the background
+  - Use $jobs to list the running jobs/tasks
+  - Use C-z to move a proc from the fg to the background
+  - Use $fg <job #> to bring a background job into the foreground
+
+13. Bash Scripting
+
+  - $which <prgm name>
+    - gives the location of the prgm should it be found in the
+    usr's PATH
+    - $echo $PATH | sed 's;:;\n;g' will print them on separate lines
+
+  - $0 represents the name of the bash script
+  - $1-$9 represent the 1st - 9th args to the script
+  - $# represents the # of args to the script
+  - $* represents all of the args to the script
+
+  - You can save the output of a cmd to a variable via `s like so:
+    - lines=`cat $1 | wc -l`
+
+  - if statements make use of a bash program called 'test' or '[]'
+    - It's a bit odd
+    - you can invoke it with $test <expr> or $ [<expr>]
+    - usually it's done the latter way in if statements
+
+Bonus Material:
+
+  - $cron (Cmd Run ON)
+    - cron configurations specified in 'crontab' file
+    - crontab file will have a line like:
+      - 30 3 * * 4 /bin/myscript.sh
+      - Exec myscript every thursday a 3:30am
+  - $crontab -l
+    - views a list of tasks you have scheduled
+  - $crontab -e
+    - edit the list of scheduled tasks
+
+  - $xargs
+    - runs a particular cmd for every item in a list
+    - e.g.
+      - $basename -s .JPG -a *.JPG | xargs -n1 -i mv {}.JPG {}.jpg
+      - get a list of every .JPG file in the dir and make its
+      extension lowercase.
+
+  - $find
+    - e.g. search for files larger than 200Mb
+      - $find /home -size +200M -exec ls -sh {} \;
+    - e.g. find all files in /etc/ modified in last 24 hours
+      - $find /etc -mtime -1
+
+  - $tar (Tape ARchive)
+    - e.g. use 'gzip' to compress all the dir's files in a new
+    archive file with the given name
+      - $tar -zcvf mytar.tar.gz *
+    - e.g. extract all files from the 'gzip'd tar file with
+    the given name
+      - $tar -zxvf mytar.tar.gz
+
+  - $scp <file to copy> <usrname>@<ip addr>:<path to file>
+    - the order of the <file to copy> and other info can be
+    swapped if you want to copy to your local machine from a remote
+    one and not the other way around.
+
+  - $du -sh ./*
+    - find the size of every dir in your current dir
+
+  - $df -h
+    - display how much disk space is used and also free

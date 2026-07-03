@@ -1,0 +1,268 @@
+Some new things you learned:
+
+2. Variables
+
+  - $* <==> $@
+  - $? is the exist status of the most recent proc
+  - $$ is the PID of the current script
+  - $USER is the uname of the usr running the script
+  - $HOSTNAME is the "" of the machine the script is running on
+  - $SECONDS is the number of seconds since the script began
+  - $RANDOM prints a different rndm # each time it is referernced
+  - $LINENO represents the current line # of the bash script
+
+  - 's treat every char literally
+  - "s allow for substitution within the str
+    - (e.g. variables) varA="this is $varB"
+
+  - A cmd's output can be saved in a var in 2 ways
+    - by wrapping the cmd in backticks `<cmd>`
+    - by wrapping the cmd in the following $( <cmd> )
+
+  - to share vars b/n proc you can 'export var' them
+
+  - Activities Notes:
+    - backticks `<cmd>` are deprecated in favor of $(<cmd>) for
+    cmd substitution b/c $(<cmd>) can be more easily nested
+    - $(<cmd>) is for cmd substitution while ${var} is for
+    disambiuation
+      - echo ${var}text prints the variable 'var' followed by
+      text
+      - echo $vartext prints the variable 'vartext'
+    - $var or ${var} must be quoted if the programmer wants to keep
+    the \n chars. Otherwise the variable will be treated as a
+    single line of input.
+    - [] in boolean eval require quoting vars
+    - [[]] in boolean eval do NOT require quoting vars
+
+    - awk takes a -F option to let you specify the separator of
+    fields as a regex
+
+
+3. User Input
+
+  - The cmd 'read' will:
+    - take input from a user
+    - save it in a variable
+
+  - You can have a script begin by 'cat'ing '/dev/stdin/'
+    - by which it will have access to the std output of a previous
+    cmd that is piped into it.
+
+4. Arithmetic
+
+  - bash supports the following to achieve expression eval:
+    - 'let' <arithmetic expr>
+      - e.g. let "a = $var + 42" or let "a++"
+        - variable CANNOT have '$' before it using '++'
+      - quotes aren't required but allow for variable sub and
+      readability
+      - multiplication need NOT be escaped '*'
+    - 'expr' <item1> <operator> <item2>
+      - quotes unecessary cause expr to be printed not eval'd
+      - spaces b/n are required
+      - multiplication must be escaped '\*'
+      - result will be printed
+      - usually used with cmd sub
+        - e.g. a=$( expr 11 % $var )
+    - '$(( <expression> ))' aka double parentheses
+      - multiplication need NOT be escaped '*'
+      - variables don't require $ b/4 themselves
+      - (( <expression> )) will work alone if you don't want to
+      save into a var
+        - e.g. (( b += 3 )) will add 3 to the variable b
+    - '${#var}'
+      - will be substituted by the length of the value in the var
+        - i.e. the # of chars in a number or a string
+      - e.g. a='Hello World' => ${#a} = 11
+      - e.g. b=4953 => ${#b} = 4
+
+5. If Statements
+
+  - Syntax
+    if [ <some test> ]
+    then
+      <cmds>
+    fi
+    - <some test> has these and more useful example ops
+      - '!<expression>' -> not op
+      - '-n <string>' -> len of string > 0
+      - '-z <string>' -> len of string == 0
+      - '<string1> = <string2>' -> str1 == str2
+      - '<string1> != <string2>' -> str1 == str2
+      - 'int1 -eq int2' -> int1 == int2
+      - 'int1 -gt int2' -> int1 > int2
+      - 'int1 -lt int2' -> int1 < int2
+      - '-d <file>' -> file exists and is a dir
+      - '-e <file>' -> file exists
+      - '-r <file>' -> file exists and read permission is granted
+      - '-w <file>' -> file exists and write permission is granted
+      - '-x <file>' -> file exists and exec permission is granted
+      - '-s <file>' -> file exists and it's size is greater than 0
+
+   - if you want to test the outcome of so if statement on the CLI
+     - test <some test>
+     - echo $? -> 0 means TRUE and 1 means FALSE
+
+   - You can also use '(( <some test> ))' instead of '[]'
+     - this is normally for arithmetic eval tests
+     - Note: '==' works like you'd expect in (( ))'s
+
+   - else and else if syntax:
+     if [ <some test> ]
+     then
+       <cmds>
+     elif [ <some test> ]
+     then
+       <cmds>
+     else
+       <cmds>
+     fi
+    - The final else is optional
+
+    - Boolean ops look like:
+      - if [ <test1> ] && [ <test2> ]
+      - if [ <test1> ] || [ <test2> ]
+
+    - Switch/Case statement syntax
+      case <variable> in
+        <pattern1>)
+          <cmds>
+          ;;
+        <pattern2>)
+          <other cmds>
+          ;;
+	*)
+	  <cmds>
+	  ;;
+      esac
+    - The default case '*)' is optional
+      - really it stands for 'any number of any character'
+      - it's a wildcard so we could actually do
+      case <var> in
+        [1-7]*)
+          <cmds>
+          ;;
+        8*)
+          <cmds>
+          ;;
+        *)
+          <cmds>
+          ;;
+        esac
+
+
+6. Loops
+
+  - while loops
+    - syntax
+    while [ <some test> ]
+    do
+      <cmds>
+    done
+
+  - until loops
+    - syntax
+    until [ <some test> ]
+    do
+      <cmds>
+    done
+
+  - for loops
+    - over $list syntax
+    for item in $list
+    do
+      <cmds>
+    done
+      - 'item' and 'list' are arbitrary and can be any variable name
+    - over range syntax
+    for val in {1..5}
+    do
+      <cmds>
+    done
+      - one can count down through a range e.g. {5..1}
+      - one can even add a step size e.g. {0..10..2}
+        - count from 0 to 10 by 2s
+
+  - select loops
+    - these will print a prompt with options and run some code
+      - if the user enters a non-option the 'item' var is empty
+      - if the user enters nothing then the options are re-displayed
+      - loop ends at a EOF or a break statement that you include
+      - change the system var PS3 to change the prompt displayed
+    - syntax
+    select item in list
+    do
+      <cmds>
+    done
+
+
+7. Functions
+
+  - With () syntax:
+    fn_name () {
+      <cmds>
+    }
+  - Without () syntax:
+    function fn_name {
+      <cmds>
+    }
+  - Note: the () are just for decoration and aren't used to carry
+  params.
+  - fn has to be defined before its use
+
+  - Passing arguements to fns
+    - You don't need them in the fn definition
+    - You put them after the fn when you call it
+      - just like if you were calling a script from the cmd line
+    - And you access them with $[1-n] just like a CLI param
+
+  - Return values
+    - Bash fns don't have return values
+    - They do have return statuses
+      - You set a fns return status with 'return <value>'
+    - Then you can access this <value> in the calling fn with '$?'
+    - Note that <value> can be a variable, but it MUST be numeric
+    - Std is return status = 0 => OK and != 0 => ERROR
+
+    - You can kind of mimic return values using cmd sub '$()'
+      - e.g. var=$( <fn name> <param1> ... <paramN> )
+      - where <fn name> () {
+                  <cmds with output of final one as output>
+              }
+    - Be careful with this useage b/c if you forget to use '$()' then
+    the result will just print to the screen!
+
+  - Variable scope
+    - by default variables have global scope
+      - visible everywhere in the script
+    - you can give variables 'local' scope by prefixing 'local' b/4
+    them the first time they are used in a fn
+      - e.g. local <var>=<value>
+
+  - Overridding bash cmds
+    - Sometimes we use a cmd with certain options over and over
+    in a script and it would be easier to create a wrapper
+    - To do this make a fn:
+      function ls {
+          command ls -<options>
+      }
+
+
+8. User Interface
+
+  - 'tput' cmd
+    - lets one control the cursor on the terminal and the format
+    of the content that's printed
+    - tput has many capability names or capnames (I'll call them
+    utilities).
+    - 'cols' utility outputs the # of columns your terminal
+    window currently has
+    - 'lines' utility outputs the # of rows your terminal window
+    currently has
+    - 'clear' utility will clear the terminal window of all content
+    including the previous line you called 'tput' on
+    - 'cup' utility will place the cursor at the given (row, col)
+    - 'bold' utiltiy will make everything printed to the terminal
+    window bold face
+    - 'sgr0' turns the text rendering back to its normal state
