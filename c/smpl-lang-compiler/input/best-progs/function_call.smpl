@@ -1,0 +1,16 @@
+main
+var out;
+
+function a(arga);
+{
+    return arga + call b(arga);
+};
+
+function b(argb);
+{
+    return argb + 2;
+};
+
+{
+    let out <- call a(7);
+}.

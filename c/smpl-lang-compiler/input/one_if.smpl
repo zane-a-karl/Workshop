@@ -1,0 +1,13 @@
+main
+var zane, steven;
+{
+  zane <- 1;
+	steven <- 2;
+
+  if zane >= steven
+	then
+	  let zane <- 42;
+  else
+	  let zane <- 24;
+  fi;
+}.

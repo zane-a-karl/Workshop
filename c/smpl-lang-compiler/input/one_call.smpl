@@ -1,0 +1,6 @@
+main
+var z;
+{
+  let z <- 42;
+	call OutputNum(z);
+}.

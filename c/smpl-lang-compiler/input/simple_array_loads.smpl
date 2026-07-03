@@ -1,0 +1,31 @@
+main
+array[10] a; var i, k, l; array[2][3] b;
+{
+    let i <- call InputNum();
+    let j <- call InputNum();
+
+		let z <- 1 + 2 - 3;
+		let a[3] <- 7;
+
+		let b[i][j] <- 42;
+
+    let a[i+1] <- 0;
+    call OutputNum(a[i]);
+
+	let a[j] <- 1;
+    call OutputNum(a[i]);
+
+	if i < 10
+	then
+        call OutputNum(a[i]);
+		let a[j] <- 2;
+		call OutputNum(a[i]);
+		return a[j+1];
+	fi;
+
+	call OutputNum(a[i]);
+
+	while i > 10 do
+	  let i <- i - 1;
+  od;
+}.

@@ -1,0 +1,12 @@
+main
+var a;
+{
+    let a <- 0;
+		if a < 10 then
+		    let a <- a + 2;
+		else
+			let a <- 42;
+	  fi;
+
+    call outputNum(a);
+}.

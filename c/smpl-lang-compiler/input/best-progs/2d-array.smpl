@@ -1,0 +1,25 @@
+main
+array[4][3] arr;
+var i, j;
+{
+    let i <- 0;
+		let j <- 0;
+    while i < 4 do
+		    while j < 3 do
+            let arr[i][j] <- 3 * i + j;
+						let j <- j + 1;						
+				od;
+				let j <- 0;
+        let i <- i + 1;				
+    od;
+    let i <- 0;
+		let j <- 0;
+    while i < 4 do
+				while j < 3 do
+            call outputNum(arr[i][j]);
+						let j <- j + 1;
+				od;
+			  let j <- 0;
+        let i <- i + 1;
+    od;
+}.

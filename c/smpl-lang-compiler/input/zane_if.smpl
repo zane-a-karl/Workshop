@@ -1,0 +1,17 @@
+main
+var a, b;
+array[3] c;
+{
+	let a <- 1;
+	let b <- 2;
+
+	if a < b
+	then
+		let a <- 3;
+	else
+		let b <- 4;
+	fi;
+
+	call outputNum(a);
+	call outputNum(b);
+}.
