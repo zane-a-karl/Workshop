@@ -1,0 +1,4 @@
+# pargs/.clangd
+# The -I./include tells clangd where to find your headers.
+CompileFlags:
+  Add: [-std=c11, -Wall, -I./include]
