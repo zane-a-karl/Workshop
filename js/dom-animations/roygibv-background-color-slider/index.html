@@ -1,0 +1,23 @@
+<!DOCTYPE HTML>
+<!--
+	This ought to have a slider that begins at red and lets the user slide through the colors of the rainbow.
+-->
+<html lang="en">
+	<head>
+		<title>JS Background Color Changer</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="style.css" />
+		<noscript>Your browser does not support JavaScript!</noscript>
+	</head>
+	<body>
+	        <div class="canvas">
+		        <h1>You Control the Background Color</h1>
+			<div class="slidecontainer">Click and Drag Through the Colors of the Rainbow!</div>
+				<input type="range" min="0" max="1020" value="0" class="slider">
+			        <p>Value: <span class="demo"></span></p>
+			        <p>Hex Value: <span class="hexresulttext"></span></p>
+		</div>
+		<script src="app.js"></script>
+	</body>
+</html>

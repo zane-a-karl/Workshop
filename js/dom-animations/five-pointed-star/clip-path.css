@@ -1,0 +1,85 @@
+.star-container {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    background-color: #101010;
+}
+
+.star-depth0 {
+    position: absolute;
+    height: 100px;
+    width: 100px;
+    /* background-color: #1B4D1B; /\* green; *\/ */
+    /* border-radius: 100%; */
+    /* 50% left and top of parent */
+    left: 50%;
+    top: 50%;
+    /* 50% up and left from bottom left element anchor */
+    transform: translate(-50%, -50%);
+    /* triangle */
+    /* clip-path: polygon(50% 0%, */
+    /*                    0% 100%, */
+    /*                    100% 100%); */
+    /* square */
+    /* clip-path: polygon(0% 0%, */
+    /*                    100% 0%, */
+    /*                    100% 100%, */
+    /*                    0% 100%); */
+    /* trapezoid */
+    /* clip-path: polygon(20% 20%, */
+    /*                    80% 20%, */
+    /*                    100% 100%, */
+    /*                    0% 100%); */
+    /* rhombus */
+    /* clip-path: polygon(15% 15%, */
+    /*                    85% 15%, */
+    /*                    70% 85%, */
+    /*                    0% 85%); */
+    /* Diamond */
+    /* clip-path: polygon(50% 0%, */
+    /*                    90% 50%, */
+    /*                    50% 100%, */
+    /*                    10% 50%); */
+    /* pentagon */
+    /* clip-path: polygon(50% 0%,  /\*top*\/ */
+    /*                    100% 38%, /\*right-top*\/ */
+    /*                    82% 100%, /\*right-bot*\/ */
+    /*                    18% 100%, /\*left-bot*\/ */
+    /*                    0% 38%);  /\*left-top*\/ */
+    /* perfect pentagon */
+    /* clip-path: polygon(50% 0%, */
+    /*                    100% 36.3%, */
+                       
+    /* ); */
+    /* star */
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    /* clip-path: polygon(50% 0%,  /\*top*\/ */
+    /*                    62% 38%, */
+    /*                    100% 38%, /\*right-top*\/ */
+    /*                    74% 76%, */
+    /*                    82% 100%, /\*right-bot*\/ */
+    /*                    50% 88%, */
+    /*                    18% 100%, /\*left-bot*\/ */
+    /*                    38% 76%, */
+    /*                    0% 38%,  /\*left-top*\/ */
+    /*                    38% 38%); */
+    background: linear-gradient(#BDEFBD, #ABDDAB, #99CB99, #87B987, #75A775, #639563, #518351, #3F713F, #2D5F2D, #1B4D1B);
+    filter: drop-shadow(0 100px 60px rgba(0, 0, 0, 0.3));
+}
+
+/* .star-depth1 { */
+/*     position: absolute; */
+/*     height: 95px; */
+/*     width: 90px; */
+/*     background-color: #BDEFBD; */
+/*     /\* border-radius: 100%; *\/ */
+/*     /\* 50% left and top of parent *\/ */
+/*     left: 50%; */
+/*     top: 50%; */
+/*     /\* 50% up and left from bottom left element anchor *\/ */
+/*     transform: translate(-50%, -50%); */
+/*     /\* triangle *\/ */
+/*     clip-path: polygon(50% 0%, */
+/*                        0% 100%, */
+/*                        100% 100%); */
+/* } */

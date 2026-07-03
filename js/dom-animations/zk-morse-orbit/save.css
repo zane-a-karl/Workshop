@@ -1,0 +1,75 @@
+body {
+    font-family: Arial, sans-serif;
+    background: white;
+    padding: 0 24px;
+    color: white;
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.test {
+    background: white;
+    width: 20px;
+    height: 20px;
+    position: fixed;
+    z-index: -100;
+    border-radius: 50%;
+    transform: translate(-50%, -50%)
+}
+
+.logo-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center align the content */
+    gap: 2px; /* Small gap between text and morse code */
+    perspective: 800px; /* Adjust: smaller = more dramatic */
+}
+
+.logo-text {
+    font-size: 36px;
+    font-weight: bold;
+    color: #333;
+    line-height: 1;
+    text-align: center;
+}
+
+.morse-container {
+    display: flex;
+    flex-direction: column;
+    transform-style: preserve-3d;
+    perspective-origin: center center;
+    transform: rotateX(45deg) rotateY(45deg);    
+}
+
+.morse-line {
+    display: flex;
+    gap: 4px; /* Space between dots/dashes */
+}
+
+/* Morse code element base styles */
+.morse-dot,
+.morse-dash {
+    background: #333;
+    transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transform-style: preserve-3d;
+}
+
+.morse-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+}
+
+.z-morse-dash {
+    width: 12px;
+    height: 3px;
+}
+
+.k-morse-dash {
+    width: 16px;
+    height: 3px;
+}
