@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" href="styles.css">
+		<!-- the type module lets us use modules in our code-->
+		<script src="script.js" type="module"></script>
+		<!-- Note that b/c you're trying to use modules you can't just drag-->
+		<!-- your html file into a browser due to https://stackoverflow.com/questions/52919331/access-to-script-at-from-origin-null-has-been-blocked-by-cors-policy-->
+		<title>Document</title>
+	</head>
+	<body>
+		<div class="score">
+			<div id="player-score">0</div>
+			<div id="computer-score">0</div>
+		</div>
+		<!-- done so as to use the class in CSS and id in JS-->
+		<div class="ball", id="ball"></div>
+		<div class="paddle left", id="player-paddle"></div>
+		<div class="paddle right", id="computer-paddle"></div>
+	</body>
+</html>

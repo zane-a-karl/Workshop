@@ -1,0 +1,8 @@
+/* Makes sizing widths and heights easier */
+*, *::before, *::after {
+		box-sizing: border-box;
+}
+/* Makes sizing widths and heights easier */
+body {
+		margin: 0;
+}
