@@ -1,0 +1,259 @@
+
+stb_ds.h,9345
+#define _CRT_SECURE_NO_WARNINGS388,13779
+#define INCLUDE_STB_DS_H392,13844
+#define arrlen 398,13940
+#define arrlenu 399,13973
+#define arrput 400,14007
+#define arrpush 401,14040
+#define arrpop 402,14073
+#define arrfree 403,14106
+#define arraddn 404,14140
+#define arraddnptr 405,14223
+#define arraddnindex 406,14260
+#define arrsetlen 407,14300
+#define arrlast 408,14336
+#define arrins 409,14370
+#define arrinsn 410,14403
+#define arrdel 411,14437
+#define arrdeln 412,14470
+#define arrdelswap 413,14504
+#define arrcap 414,14541
+#define arrsetcap 415,14574
+#define hmput 417,14611
+#define hmputs 418,14643
+#define hmget 419,14676
+#define hmget_ts 420,14708
+#define hmgets 421,14743
+#define hmgetp 422,14776
+#define hmgetp_ts 423,14809
+#define hmgetp_null 424,14845
+#define hmgeti 425,14883
+#define hmgeti_ts 426,14916
+#define hmdel 427,14952
+#define hmlen 428,14984
+#define hmlenu 429,15016
+#define hmfree 430,15049
+#define hmdefault 431,15082
+#define hmdefaults 432,15118
+#define shput 434,15156
+#define shputi 435,15188
+#define shputs 436,15221
+#define shget 437,15254
+#define shgeti 438,15286
+#define shgets 439,15319
+#define shgetp 440,15352
+#define shgetp_null 441,15385
+#define shdel 442,15423
+#define shlen 443,15455
+#define shlenu 444,15487
+#define shfree 445,15520
+#define shdefault 446,15553
+#define shdefaults 447,15589
+#define sh_new_arena 448,15626
+#define sh_new_strdup 449,15667
+#define stralloc 451,15710
+#define strreset 452,15745
+#define STBDS_REALLOC(460,16040
+#define STBDS_FREE(461,16082
+#define STBDS_NOTUSED(465,16143
+#define STBDS_NOTUSED(467,16185
+typedef struct stbds_string_arena stbds_string_arena;482,16759
+#define STBDS_HAS_TYPEOF509,17885
+#define STBDS_HAS_LITERAL_ARRAY517,18104
+  #define STBDS_ADDRESSOF(524,18318
+  #define STBDS_ADDRESSOF(526,18450
+#define STBDS_ADDRESSOF(529,18585
+#define STBDS_OFFSETOF(532,18646
+#define stbds_header(534,18733
+#define stbds_temp(535,18791
+#define stbds_temp_key(536,18838
+#define stbds_arrsetcap(538,18906
+#define stbds_arrsetlen(539,18960
+#define stbds_arrcap(540,19117
+#define stbds_arrlen(541,19186
+#define stbds_arrlenu(542,19265
+#define stbds_arrput(543,19344
+#define stbds_arrpush 544,19439
+#define stbds_arrpop(545,19495
+#define stbds_arraddn(546,19584
+#define stbds_arraddnptr(547,19702
+#define stbds_arraddnindex(548,19840
+#define stbds_arraddnoff 549,19984
+#define stbds_arrlast(550,20034
+#define stbds_arrfree(551,20098
+#define stbds_arrdel(552,20199
+#define stbds_arrdeln(553,20251
+#define stbds_arrdelswap(554,20397
+#define stbds_arrinsn(555,20486
+#define stbds_arrins(556,20624
+#define stbds_arrmaybegrow(558,20695
+#define stbds_arrgrow(561,20866
+#define stbds_hmput(563,20957
+#define stbds_hmputs(568,21192
+#define stbds_hmgeti(572,21356
+#define stbds_hmgeti_ts(576,21540
+#define stbds_hmgetp(580,21733
+#define stbds_hmgetp_ts(583,21819
+#define stbds_hmdel(586,21909
+#define stbds_hmdefault(589,22115
+#define stbds_hmdefaults(592,22227
+#define stbds_hmfree(595,22334
+#define stbds_hmgets(598,22448
+#define stbds_hmget(599,22499
+#define stbds_hmget_ts(600,22556
+#define stbds_hmlen(601,22627
+#define stbds_hmlenu(602,22711
+#define stbds_hmgetp_null(603,22795
+#define stbds_shput(605,22887
+#define stbds_shputi(609,23065
+#define stbds_shputs(613,23263
+#define stbds_pshput(618,23591
+#define stbds_shgeti(622,23771
+#define stbds_pshgeti(626,23929
+#define stbds_shgetp(630,24098
+#define stbds_pshget(633,24184
+#define stbds_shdel(636,24270
+#define stbds_pshdel(638,24448
+#define stbds_sh_new_arena(641,24639
+#define stbds_sh_new_strdup(643,24742
+#define stbds_shdefault(646,24847
+#define stbds_shdefaults(647,24899
+#define stbds_shfree 649,24953
+#define stbds_shlenu 650,24993
+#define stbds_shgets(652,25034
+#define stbds_shget(653,25082
+#define stbds_shgetp_null(654,25136
+#define stbds_shlen 655,25227
+  size_t      length;659,25284
+  size_t      capacity;660,25306
+  void      * hash_table;661,25330
+  ptrdiff_t   temp;662,25356
+} stbds_array_header;663,25376
+typedef struct stbds_string_block665,25399
+  struct stbds_string_block *next;next667,25435
+  char storage[storage668,25470
+} stbds_string_block;669,25489
+struct stbds_string_arena671,25512
+  stbds_string_block *storage;storage673,25540
+  size_t remaining;674,25571
+  unsigned char block;675,25591
+  unsigned char mode;676,25614
+#define STBDS_HM_BINARY 679,25687
+#define STBDS_HM_STRING 680,25721
+   STBDS_SH_NONE,684,25763
+   STBDS_SH_DEFAULT,685,25781
+   STBDS_SH_STRDUP,686,25802
+   STBDS_SH_ARENA687,25822
+template<class T> static T * stbds_arrgrowf_wrapper(693,25992
+template<class T> static T * stbds_hmget_key_wrapper(696,26169
+template<class T> static T * stbds_hmget_key_ts_wrapper(699,26356
+template<class T> static T * stbds_hmput_default_wrapper(702,26572
+template<class T> static T * stbds_hmput_key_wrapper(705,26711
+template<class T> static T * stbds_hmdel_key_wrapper(708,26898
+template<class T> static T * stbds_shmode_func_wrapper(711,27113
+#define stbds_arrgrowf_wrapper 715,27258
+#define stbds_hmget_key_wrapper 716,27315
+#define stbds_hmget_key_ts_wrapper 717,27373
+#define stbds_hmput_default_wrapper 718,27434
+#define stbds_hmput_key_wrapper 719,27496
+#define stbds_hmdel_key_wrapper 720,27554
+#define stbds_shmode_func_wrapper(721,27612
+#define STBDS_ASSERT_WAS_UNDEFINED737,27911
+#define STBDS_ASSERT(738,27946
+#define STBDS_STATS(742,28015
+size_t stbds_array_grow;743,28042
+size_t stbds_hash_grow;744,28067
+size_t stbds_hash_shrink;745,28091
+size_t stbds_hash_rebuild;746,28117
+size_t stbds_hash_probes;747,28144
+size_t stbds_hash_alloc;748,28170
+size_t stbds_rehash_probes;749,28195
+size_t stbds_rehash_items;750,28223
+#define STBDS_STATS(752,28256
+void *stbds_arrgrowf(stbds_arrgrowf762,28366
+void stbds_arrfreef(800,29472
+#define STBDS_BUCKET_LENGTH 810,29623
+#define STBDS_BUCKET_LENGTH 812,29664
+#define STBDS_BUCKET_SHIFT 815,29707
+#define STBDS_BUCKET_MASK 816,29774
+#define STBDS_CACHE_LINE_SIZE 817,29830
+#define STBDS_ALIGN_FWD(819,29866
+   size_t    hash 823,29944
+   ptrdiff_t index[index824,29985
+} stbds_hash_bucket;825,30026
+  char * temp_key;829,30159
+  size_t slot_count;830,30228
+  size_t used_count;831,30249
+  size_t used_count_threshold;832,30270
+  size_t used_count_shrink_threshold;833,30301
+  size_t tombstone_count;834,30339
+  size_t tombstone_count_threshold;835,30365
+  size_t seed;836,30401
+  size_t slot_count_log2;837,30416
+  stbds_string_arena string;838,30442
+  stbds_hash_bucket *storage;storage839,30471
+} stbds_hash_index;840,30578
+#define STBDS_INDEX_EMPTY 842,30599
+#define STBDS_INDEX_DELETED 843,30631
+#define STBDS_INDEX_IN_USE(844,30663
+#define STBDS_HASH_EMPTY 846,30706
+#define STBDS_HASH_DELETED 847,30738
+static size_t stbds_hash_seed=849,30771
+void stbds_rand_seed(851,30814
+#define stbds_load_32_or_64(856,30879
+#define STBDS_SIZE_T_BITS 861,31209
+static size_t stbds_probe_position(863,31270
+static size_t stbds_log2(874,31522
+static stbds_hash_index *stbds_make_hash_index(stbds_make_hash_index884,31659
+#define STBDS_ROTATE_LEFT(1013,37561
+#define STBDS_ROTATE_RIGHT(1014,37653
+size_t stbds_hash_string(1016,37746
+#define STBDS_SIPHASH_C_ROUNDS 1034,38247
+#define STBDS_SIPHASH_D_ROUNDS 1035,38280
+typedef int STBDS_SIPHASH_2_4_can_only_be_used_in_64_bit_builds[STBDS_SIPHASH_2_4_can_only_be_used_in_64_bit_builds1036,38313
+#define STBDS_SIPHASH_C_ROUNDS 1040,38447
+#define STBDS_SIPHASH_D_ROUNDS 1043,38518
+static size_t stbds_siphash_bytes(1051,38706
+  #define STBDS_SIPROUND(1073,39636
+size_t stbds_hash_bytes(1116,41384
+static int stbds_is_key_equal(1203,44798
+#define STBDS_HASH_TO_ARR(1211,45122
+#define STBDS_ARR_TO_HASH(1212,45187
+#define stbds_hash_table(1214,45253
+void stbds_hmfree_func(1216,45334
+static ptrdiff_t stbds_hm_find_slot(1232,45832
+void * stbds_hmget_key_ts(1281,47574
+void * stbds_hmget_key(1312,48581
+void * stbds_hmput_default(1320,48826
+void *stbds_hmput_key(stbds_hmput_key1337,49349
+void * stbds_shmode_func(1461,53955
+void * stbds_hmdel_key(1472,54327
+static char *stbds_strdup(stbds_strdup1540,57148
+#define STBDS_STRING_ARENA_BLOCKSIZE_MIN 1551,57480
+#define STBDS_STRING_ARENA_BLOCKSIZE_MAX 1554,57575
+char *stbds_stralloc(stbds_stralloc1557,57634
+void stbds_strreset(1605,59373
+#undef STBDS_ASSERT1627,59753
+#define STBDS_ASSERT 1630,59801
+typedef struct { int key,1634,59857
+typedef struct { int key,b,1634,59857
+typedef struct { int key,b,c,1634,59857
+typedef struct { int key,b,c,d;1634,59857
+typedef struct { int key,b,c,d; } stbds_struct;1634,59857
+typedef struct { int key[key1635,59905
+typedef struct { int key[2],b,1635,59905
+typedef struct { int key[2],b,c,1635,59905
+typedef struct { int key[2],b,c,d;1635,59905
+typedef struct { int key[2],b,c,d; } stbds_struct2;1635,59905
+static char buffer[buffer1637,59958
+char *strkey(strkey1638,59983
+void stbds_unit_tests(1648,60182
+  struct { int   key;1657,60473
+  struct { int   key;        int value;1657,60473
+  struct { char *key;key1658,60533
+  struct { char *key;        int value;1658,60533
+  struct { stbds_struct key;1659,60596
+  struct { stbds_struct key; int value;1659,60596
+    struct { char *key;key1797,64701
+    struct { char *key; char value;1797,64701
