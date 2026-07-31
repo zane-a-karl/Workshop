@@ -11,7 +11,8 @@
  *  - [X] make a generic GET request with curl
  *  - [X] make a generic POST request with curl
  *  - [X] save POST response to a local variable
- *  - [ ] parse the curl api call with cjson
+ *  - [X] parse the curl api call response with cjson
+ *  - [ ] send a curl api call with a json payload
  *  - [ ] make an api call to openweathermap's api with curl
  *  - [ ] parse the openweathermap curl api call with cjson
  */
@@ -132,10 +133,28 @@ void make_httpbin_api_call(char *url, enum HTTP_VERB v) {
     curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &status_code);
     printf("HTTP status: %ld\n", status_code);
 
+    // Parse the response
+    cJSON *json_handle = cJSON_Parse(rb.data);
+
     // Print the response
-    printf("%s", rb.data);
+    /* printf("%s", rb.data); */
+    /* char *json_str = cJSON_Print(json_handle); */
+    /* printf("%s\n", json_str); */
+    cJSON_bool has_form_data =
+        cJSON_HasObjectItem(json_handle, "form");
+    if (has_form_data) {
+        printf("Form data found\n");
+        cJSON *form_json_handle =
+            cJSON_GetObjectItem(json_handle, "form");
+        char *form_json_str = cJSON_Print(form_json_handle);
+        printf("%s\n", form_json_str);
+        free(form_json_str);
+    }
+
 
     // Free memory
+    /* free(json_str); */
+    cJSON_Delete(json_handle);
     free(rb.data); // free the current not the original
     curl_easy_cleanup(handle);
 }
