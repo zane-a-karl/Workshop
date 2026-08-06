@@ -12,7 +12,7 @@
  *  - [X] make a generic POST request with curl
  *  - [X] save POST response to a local variable
  *  - [X] parse the curl api call response with cjson
- *  - [ ] send a curl api call with a json payload
+ *  - [X] send a curl api call with a json payload
  *  - [ ] make an api call to openweathermap's api with curl
  *  - [ ] parse the openweathermap curl api call with cjson
  */
@@ -80,6 +80,7 @@ void make_httpbin_api_call(char *url, enum HTTP_VERB v) {
     struct response_buffer rb = {rb_data, 0, INIT_RB_SIZE};
     struct test_obj obj = { "Jack Aku", 42 };
     char body[128]; // Must live until perform() call
+    struct curl_slist *headers;
     CURL *handle = curl_easy_init();
     c = curl_easy_setopt(handle,
                          CURLOPT_WRITEDATA,
@@ -100,30 +101,58 @@ void make_httpbin_api_call(char *url, enum HTTP_VERB v) {
         check_curl_error(c);
         printf("3rd setopt CURLcode c was: %d\n", c);
 
-        size_t bytes =
-            snprintf(body,
-                     sizeof(body)/sizeof(*body),
-                     "name=%s&age=%d",
-                     obj.name,
-                     obj.age);
+        /* "name=%s&age=%d" */
+        /* "{\"name\": \"%s\", \"age\": %d}" */
+        cJSON *obj_hdl = cJSON_CreateObject();
+        cJSON *name_hdl =
+            cJSON_AddStringToObject(obj_hdl, "name",
+                                    obj.name);
+        if (name_hdl == NULL) {
+            printf("Failed to add name\n");
+            return;
+        }
+        cJSON *age_hdl =
+            cJSON_AddNumberToObject(obj_hdl, "age",
+                                    (double)(obj.age));
+        if (age_hdl == NULL) {
+            printf("Failed to add age\n");
+            return;
+        }
+        char *obj_json_str = cJSON_Print(obj_hdl);
+        printf("obj_json_str: %s\n", obj_json_str);
+        /* size_t bytes = */
+        /*     snprintf(body, */
+        /*              sizeof(body)/sizeof(*body), */
+        /*              "name=%s&age=%d", */
+        /*              obj.name, */
+        /*              obj.age); */
         c = curl_easy_setopt(handle,
                              CURLOPT_POSTFIELDS,
-                             body);
+                             obj_json_str);
         check_curl_error(c);
         printf("4th setopt CURLcode c was: %d\n", c);
 
+        size_t bytes = strnlen(obj_json_str, 256);
         c = curl_easy_setopt(handle,
                              CURLOPT_POSTFIELDSIZE,
                              bytes);
         check_curl_error(c);
         printf("5th setopt CURLcode c was: %d\n", c);
+
+        headers = curl_slist_append(NULL, "Content-Type: application/json");
+        headers = curl_slist_append(headers, "Accept: application/json");
+        c = curl_easy_setopt(handle,
+                             CURLOPT_HTTPHEADER,
+                             headers);
+        check_curl_error(c);
+        printf("6th setopt CURLcode c was: %d\n", c);
     }
 
     c = curl_easy_setopt(handle,
                          CURLOPT_WRITEFUNCTION,
                          curl_fwrite_callback);
     check_curl_error(c);
-    printf("6th setopt CURLcode c was: %d\n", c);
+    printf("7th setopt CURLcode c was: %d\n", c);
 
     c = curl_easy_perform(handle);
     check_curl_error(c);
@@ -133,27 +162,31 @@ void make_httpbin_api_call(char *url, enum HTTP_VERB v) {
     curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &status_code);
     printf("HTTP status: %ld\n", status_code);
 
+    if (v == POST) {
+        curl_slist_free_all(headers);
+    }
+
     // Parse the response
     cJSON *json_handle = cJSON_Parse(rb.data);
 
     // Print the response
     /* printf("%s", rb.data); */
-    /* char *json_str = cJSON_Print(json_handle); */
-    /* printf("%s\n", json_str); */
-    cJSON_bool has_form_data =
-        cJSON_HasObjectItem(json_handle, "form");
-    if (has_form_data) {
-        printf("Form data found\n");
-        cJSON *form_json_handle =
-            cJSON_GetObjectItem(json_handle, "form");
-        char *form_json_str = cJSON_Print(form_json_handle);
-        printf("%s\n", form_json_str);
-        free(form_json_str);
+    char *json_str = cJSON_Print(json_handle);
+    printf("%s\n", json_str);
+    cJSON_bool has_json_field =
+        cJSON_HasObjectItem(json_handle, "json");
+    if (has_json_field) {
+        printf("Json field found\n");
+        cJSON *json_field_handle =
+            cJSON_GetObjectItem(json_handle, "json");
+        char *json_field_str = cJSON_Print(json_field_handle);
+        printf("%s\n", json_field_str);
+        free(json_field_str);
     }
 
 
     // Free memory
-    /* free(json_str); */
+    free(json_str);
     cJSON_Delete(json_handle);
     free(rb.data); // free the current not the original
     curl_easy_cleanup(handle);
