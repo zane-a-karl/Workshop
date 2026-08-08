@@ -13,6 +13,7 @@
  *  - [X] save POST response to a local variable
  *  - [X] parse the curl api call response with cjson
  *  - [X] send a curl api call with a json payload
+ *  - [X] setup and read test api key from env variable
  *  - [ ] make an api call to openweathermap's api with curl
  *  - [ ] parse the openweathermap curl api call with cjson
  */
@@ -199,11 +200,19 @@ void make_httpbin_api_call(char *url, enum HTTP_VERB v) {
 #define HTTPBIN_JSON "https://httpbin.org/json"
 
 int main() {
-    char url[256];
-    int bytes = snprintf(url,
-                         sizeof(url)/sizeof(*url),
-                         HTTPBIN_POST);
-    printf("sprintf bytes written was: %d\n", bytes);
-    make_httpbin_api_call(url, POST);
+    /* char url[256]; */
+    /* int bytes = snprintf(url, */
+    /*                      sizeof(url)/sizeof(*url), */
+    /*                      HTTPBIN_POST); */
+    /* printf("sprintf bytes written was: %d\n", bytes); */
+    /* make_httpbin_api_call(url, POST); */
+
+    // Make openweathermap api call
+    // set -a
+    // source ./.envrc
+    // set +a
+    char *test_api_key = getenv("TEST_API_KEY");
+    printf("test api key = %s\n", test_api_key);
+
     return 0;
 }
