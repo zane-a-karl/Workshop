@@ -20,6 +20,7 @@
  *  - [X] parse the wapi curl api call with cjson
  *  - [X] make an api call to weatherbit's api with curl
  *  - [X] parse the wbit curl api call with cjson
+ *  - [X] return majority rain prediction
  */
 #include <curl/curl.h>
 #include <cjson/cJSON.h>
@@ -210,7 +211,6 @@ struct alert_output {
 
 bool make_owm_api_call(struct alert_input in) {
 
-    printf("----------Begin OWM query----------\n");
     // Initialize handles and buffers
     CURLcode c;
     char *rb_data = malloc(INIT_RB_SIZE * sizeof(*rb_data));
@@ -256,7 +256,7 @@ bool make_owm_api_call(struct alert_input in) {
     char *json_resp_str = cJSON_Print(json_hdl);
     /* printf("response: %s\n", json_resp_str); */
     cJSON_bool has_list = cJSON_HasObjectItem(json_hdl, "list");
-    if (!has_list) { return false; }
+    if (!has_list) { printf("has_list\n"); return false; }
     cJSON *list_hdl = cJSON_GetObjectItem(json_hdl, "list");
     int list_size = cJSON_GetArraySize(list_hdl);
     time_t now = time(NULL);
@@ -265,10 +265,10 @@ bool make_owm_api_call(struct alert_input in) {
         cJSON *list_item_hdl = cJSON_GetArrayItem(list_hdl, i);
         cJSON_bool has_dt =
             cJSON_HasObjectItem(list_item_hdl, "dt");
-        if (!has_dt) { return false; }
+        if (!has_dt) { printf("has_dt\n"); return false; }
         cJSON *dt_hdl = cJSON_GetObjectItem(list_item_hdl, "dt");
         cJSON_bool dt_is_number = cJSON_IsNumber(dt_hdl);
-        if (!dt_is_number) { return false; }
+        if (!dt_is_number) { printf("dt_is_number\n"); return false; }
         double dt = cJSON_GetNumberValue(dt_hdl);
 
         // Skip if forecast is beyond 24 hours
@@ -279,7 +279,7 @@ bool make_owm_api_call(struct alert_input in) {
         //// First Main Weather Designation
         cJSON_bool has_weather =
             cJSON_HasObjectItem(list_item_hdl, "weather");
-        if (!has_weather) { return false; }
+        if (!has_weather) { printf("has_weather\n"); return false; }
         cJSON *weather_hdl =
             cJSON_GetObjectItem(list_item_hdl, "weather");
         int weather_size = cJSON_GetArraySize(weather_hdl);
@@ -289,7 +289,7 @@ bool make_owm_api_call(struct alert_input in) {
                 cJSON_GetArrayItem(weather_hdl, j);
             cJSON_bool has_main =
                 cJSON_HasObjectItem(weather_item_hdl, "main");
-            if (!has_main) { return false; }
+            if (!has_main) { printf("has_main\n"); return false; }
             cJSON *main_hdl =
                 cJSON_GetObjectItem(weather_item_hdl, "main");
             char *main_str = cJSON_Print(main_hdl);
@@ -301,19 +301,19 @@ bool make_owm_api_call(struct alert_input in) {
         //// Second Probability of Precipitation (pop)
         cJSON_bool has_pop =
             cJSON_HasObjectItem(list_item_hdl, "pop");
-        if (!has_pop) { return false; }
+        if (!has_pop) { printf("has_pop\n"); return false; }
         cJSON *pop_hdl = cJSON_GetObjectItem(list_item_hdl, "pop");
         cJSON_bool pop_is_number = cJSON_IsNumber(pop_hdl);
-        if (!pop_is_number) { return false; }
+        if (!pop_is_number) { printf("pop_is_number\n"); return false; }
         double pop = cJSON_GetNumberValue(pop_hdl);
 
         //// Third has a 'rain' item
-        cJSON_bool has_rain =
-            cJSON_HasObjectItem(list_item_hdl, "rain");
-        if (!has_rain) { return false; }
+        /* cJSON_bool has_rain = */
+        /*     cJSON_HasObjectItem(list_item_hdl, "rain"); */
+        /* if (!has_rain) { printf("has_rain\n"); return false; } */
 
         // Combine to check for rain
-        if (0 == main_rain && pop > 0.55 && has_rain) {
+        if (0 == main_rain && pop > 0.55 /* && has_rain */) {
             return true;
         }
     } // for loop
@@ -324,13 +324,11 @@ bool make_owm_api_call(struct alert_input in) {
     free(rb.data);
     curl_easy_cleanup(curl_hdl);
 
-    printf("----------End OWM query----------\n");
     return false;
 }
 
 bool make_wapi_api_call(struct alert_input in) {
 
-    printf("----------Begin WAPI query----------\n");
     // Initialize handles and buffers
     CURLcode c;
     char *rb_data = malloc(INIT_RB_SIZE * sizeof(*rb_data));
@@ -378,11 +376,11 @@ bool make_wapi_api_call(struct alert_input in) {
     /* printf("response: %s\n", json_resp_str); */
     cJSON_bool has_forecast =
         cJSON_HasObjectItem(json_hdl, "forecast");
-    if (!has_forecast) { return false; }
+    if (!has_forecast) { printf("has_forecast\n"); return false; }
     cJSON *forecast_hdl = cJSON_GetObjectItem(json_hdl, "forecast");
     cJSON_bool has_forecastday =
         cJSON_HasObjectItem(forecast_hdl, "forecastday");
-    if (!has_forecastday) { return false; }
+    if (!has_forecastday) { printf("has_forecastday\n"); return false; }
     cJSON *forecastday_hdl =
         cJSON_GetObjectItem(forecast_hdl, "forecastday");
     int forecastday_size = cJSON_GetArraySize(forecastday_hdl);
@@ -393,20 +391,20 @@ bool make_wapi_api_call(struct alert_input in) {
             cJSON_GetArrayItem(forecastday_hdl, i);
         cJSON_bool has_hour =
             cJSON_HasObjectItem(forecastday_item_hdl, "hour");
-        if (!has_hour) { return false; }
+        if (!has_hour) { printf("has_hour\n"); return false; }
         cJSON *hour_hdl =
             cJSON_GetObjectItem(forecastday_item_hdl, "hour");
         int hour_size = cJSON_GetArraySize(hour_hdl);
         for (int j = 0; j < hour_size; j++) {
             cJSON *hour_item_hdl = cJSON_GetArrayItem(hour_hdl, j);
             cJSON_bool has_time_epoch =
-                cJSON_HasObjectItem(hour_hdl, "time_epoch");
-            if (!has_time_epoch) { return false; }
+                cJSON_HasObjectItem(hour_item_hdl, "time_epoch");
+            if (!has_time_epoch) { printf("has_time_epoch\n"); return false; }
             cJSON *time_epoch_hdl =
                 cJSON_GetObjectItem(hour_item_hdl, "time_epoch");
             cJSON_bool time_epoch_is_number =
                 cJSON_IsNumber(time_epoch_hdl);
-            if (!time_epoch_is_number) { return false; }
+            if (!time_epoch_is_number) { printf("time_epoch_is_number\n"); return false; }
             double time_epoch =
                 cJSON_GetNumberValue(time_epoch_hdl);
 
@@ -418,12 +416,12 @@ bool make_wapi_api_call(struct alert_input in) {
             //// First Main Weather Designation
             cJSON_bool has_condition =
                 cJSON_HasObjectItem(hour_item_hdl, "condition");
-            if (!has_condition) { return false; }
+            if (!has_condition) { printf("has_condition\n"); return false; }
             cJSON *condition_hdl =
                 cJSON_GetObjectItem(hour_item_hdl, "condition");
             cJSON_bool has_text =
                 cJSON_HasObjectItem(condition_hdl, "text");
-            if (!has_text) { return false; }
+            if (!has_text) { printf("has_text\n"); return false; }
             cJSON *text_hdl =
                 cJSON_GetObjectItem(condition_hdl, "text");
             char *text_str = cJSON_Print(text_hdl);
@@ -436,24 +434,24 @@ bool make_wapi_api_call(struct alert_input in) {
             //// Second Probability of Precipitation (pop)
             cJSON_bool has_chance_of_rain =
                 cJSON_HasObjectItem(hour_item_hdl, "chance_of_rain");
-            if (!has_chance_of_rain) { return false; }
+            if (!has_chance_of_rain) { printf("has_chance_of_rain\n"); return false; }
             cJSON *chance_of_rain_hdl =
                 cJSON_GetObjectItem(hour_item_hdl, "chance_of_rain");
             cJSON_bool chance_of_rain_is_number =
                 cJSON_IsNumber(chance_of_rain_hdl);
-            if (!chance_of_rain_is_number) { return false; }
+            if (!chance_of_rain_is_number) { printf("chance_of_rain_is_number\n"); return false; }
             double chance_of_rain =
                 cJSON_GetNumberValue(chance_of_rain_hdl);
 
             //// Third will_it_rain is 1
             cJSON_bool has_will_it_rain =
                 cJSON_HasObjectItem(hour_item_hdl, "will_it_rain");
-            if (!has_will_it_rain) { return false; }
+            if (!has_will_it_rain) { printf("has_will_it_rain\n"); return false; }
             cJSON *will_it_rain_hdl =
                 cJSON_GetObjectItem(hour_item_hdl, "will_it_rain");
             cJSON_bool will_it_rain_is_number =
                 cJSON_IsNumber(will_it_rain_hdl);
-            if (!will_it_rain_is_number) { return false; }
+            if (!will_it_rain_is_number) { printf("will_it_rain_is_number\n"); return false; }
             double will_it_rain =
                 cJSON_GetNumberValue(will_it_rain_hdl);
 
@@ -472,13 +470,11 @@ bool make_wapi_api_call(struct alert_input in) {
     free(rb.data);
     curl_easy_cleanup(curl_hdl);
 
-    printf("----------End WAPI query----------\n");
     return false;
 }
 
 bool make_wbit_api_call(struct alert_input in) {
 
-    printf("----------Begin WBIT query----------\n");
     // Initialize handles and buffers
     CURLcode c;
     char *rb_data = malloc(INIT_RB_SIZE * sizeof(*rb_data));
@@ -524,7 +520,7 @@ bool make_wbit_api_call(struct alert_input in) {
     /* printf("response: %s\n", json_resp_str); */
     cJSON_bool has_data =
         cJSON_HasObjectItem(json_hdl, "data");
-    if (!has_data) { return false; }
+    if (!has_data) { printf("has_data\n"); return false; }
     cJSON *data_hdl = cJSON_GetObjectItem(json_hdl, "data");
     int data_size = cJSON_GetArraySize(data_hdl);
     time_t now = time(NULL);
@@ -533,12 +529,12 @@ bool make_wbit_api_call(struct alert_input in) {
         cJSON *data_item_hdl = cJSON_GetArrayItem(data_hdl, i);
         cJSON_bool has_datetime =
             cJSON_HasObjectItem(data_item_hdl, "datetime");
-        if (!has_datetime) { return false; }
+        if (!has_datetime) { printf("has_datetime\n"); return false; }
         cJSON *datetime_hdl =
             cJSON_GetObjectItem(data_item_hdl, "datetime");
         cJSON_bool datetime_is_string =
             cJSON_IsString(datetime_hdl);
-        if (!datetime_is_string) { return false; }
+        if (!datetime_is_string) { printf("datetime_is_string\n"); return false; }
         char *datetime = cJSON_GetStringValue(datetime_hdl);
         int year, month, day;
         sscanf(datetime, "%d-%d-%d", &year, &month, &day);
@@ -554,17 +550,17 @@ bool make_wbit_api_call(struct alert_input in) {
         //// First Weather Description
         cJSON_bool has_weather =
             cJSON_HasObjectItem(data_item_hdl, "weather");
-        if (!has_weather) { return false; }
+        if (!has_weather) { printf("has_weather\n"); return false; }
         cJSON *weather_hdl =
             cJSON_GetObjectItem(data_item_hdl, "weather");
         cJSON_bool has_description =
             cJSON_HasObjectItem(weather_hdl, "description");
-        if (!has_description) { return false; }
+        if (!has_description) { printf("has_description\n"); return false; }
         cJSON *description_hdl =
             cJSON_GetObjectItem(weather_hdl, "description");
         cJSON_bool description_is_string =
             cJSON_IsString(description_hdl);
-        if (!description_is_string) { return false; }
+        if (!description_is_string) { printf("description_is_string\n"); return false; }
         char *description =
             cJSON_GetStringValue(description_hdl);
         int description_rain = strncmp(description, "Rain",
@@ -574,20 +570,20 @@ bool make_wbit_api_call(struct alert_input in) {
         //// Second Probability of Precipitation (pop)
         cJSON_bool has_pop =
             cJSON_HasObjectItem(data_item_hdl, "pop");
-        if (!has_pop) { return false; }
+        if (!has_pop) { printf("has_pop\n"); return false; }
         cJSON *pop_hdl = cJSON_GetObjectItem(data_item_hdl, "pop");
         cJSON_bool pop_is_number = cJSON_IsNumber(pop_hdl);
-        if (!pop_is_number) { return false; }
+        if (!pop_is_number) { printf("pop_is_number\n"); return false; }
         double pop = cJSON_GetNumberValue(pop_hdl);
 
         //// Third will_it_rain is 1
         cJSON_bool has_precip =
             cJSON_HasObjectItem(data_item_hdl, "precip");
-        if (!has_precip) { return false; }
+        if (!has_precip) { printf("has_precip\n"); return false; }
         cJSON *precip_hdl =
             cJSON_GetObjectItem(data_item_hdl, "precip");
         cJSON_bool precip_is_number = cJSON_IsNumber(precip_hdl);
-        if (!precip_is_number) { return false; }
+        if (!precip_is_number) { printf("precip_is_number\n"); return false; }
         double precip = cJSON_GetNumberValue(precip_hdl);
 
         // Combine to check for rain
@@ -604,17 +600,22 @@ bool make_wbit_api_call(struct alert_input in) {
     free(rb.data);
     curl_easy_cleanup(curl_hdl);
 
-    printf("----------End WBIT query----------\n");
     return false;
 }
 
+/** NOTE: you must source and export your
+ * .envrc to access api keys for this program
+ * set -a
+ * source ./.envrc
+ * set +a
+ */
 int main() {
 
     /* The latitude of Irvine, California is approximately */
     /* 33.6695° N and the longitude is about -117.823° W. */
     struct alert_input in = { 33.6695, -117.823 };
     printf("Query for lat={%f}, lon={%f}\n", in.lat, in.lon);
-    struct alert_output out = { false, false };
+    struct alert_output out = { false, false, false };
     /* char url[MAX_URL_LEN]; */
     /* int bytes = snprintf(url, */
     /*                      sizeof(url)/sizeof(*url), */
@@ -622,19 +623,19 @@ int main() {
     /* printf("sprintf bytes written was: %d\n", bytes); */
     /* make_httpbin_api_call(url, POST); */
 
-    // Make openweathermap api call
+    // Make api calls
     out.owm_will_rain = make_owm_api_call(in);
-    printf("OWM says it will rain: %d\n", out.owm_will_rain);
     out.wapi_will_rain = make_wapi_api_call(in);
-    printf("WAPI says it will rain: %d\n", out.wapi_will_rain);
     out.wbit_will_rain = make_wbit_api_call(in);
-    printf("WBIT says it will rain: %d\n", out.wbit_will_rain);
 
-    // set -a
-    // source ./.envrc
-    // set +a
-    /* char *test_api_key = getenv("TEST_API_KEY"); */
-    /* printf("test api key = %s\n", test_api_key); */
+    // If a majority of calls forecast rain return RAIN
+    if ( (out.owm_will_rain && out.wapi_will_rain) ||
+         (out.owm_will_rain && out.wbit_will_rain) ||
+         (out.wapi_will_rain && out.wbit_will_rain) ) {
+        printf("RAIN!!!\n");
+    } else {
+        printf("No rain\n");
+    }
 
     return 0;
 }
