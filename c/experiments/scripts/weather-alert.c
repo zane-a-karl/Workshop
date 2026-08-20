@@ -22,7 +22,7 @@
  *  - [X] parse the wbit curl api call with cjson
  *  - [X] return majority rain prediction
  *  - [X] pull out httpbin test into a local testing file
- *  - [ ] consolidate curl api requests in http_get() fn
+ *  - [X] consolidate curl api requests in http_get() fn
  */
 #include <curl/curl.h>
 #include <cjson/cJSON.h>
@@ -32,19 +32,32 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-/* #include <stdio.h> */
 
-void check_curl_error(CURLcode c, char *subject) {
-    if (0 != c) {
-        printf("Curl <%s> exited with error code: %d\n", subject, c);
-    }
-}
+#define INIT_RB_SIZE 256
+#define MAX_URL_LEN 512
+
+struct alert_input {
+    double lat;
+    double lon;
+};
+
+struct alert_output {
+    bool owm_will_rain;
+    bool wapi_will_rain;
+    bool wbit_will_rain;
+};
 
 struct response_buffer {
     char *data;
     size_t size_assigned;
     size_t size_reserved;
 };
+
+void check_curl_error(CURLcode c, char *subject) {
+    if (0 != c) {
+        printf("Curl <%s> exited with error code: %d\n", subject, c);
+    }
+}
 
 size_t curl_fwrite_callback(const void *restrict ptr,
                             size_t size,
@@ -74,21 +87,7 @@ size_t curl_fwrite_callback(const void *restrict ptr,
     return ptr_size;
 }
 
-#define INIT_RB_SIZE 256
-#define MAX_URL_LEN 256
-
-struct alert_input {
-    double lat;
-    double lon;
-};
-
-struct alert_output {
-    bool owm_will_rain;
-    bool wapi_will_rain;
-    bool wbit_will_rain;
-};
-
-bool make_owm_api_call(struct alert_input in) {
+char *make_http_get(char *url) {
 
     // Initialize handles and buffers
     CURLcode c;
@@ -96,22 +95,10 @@ bool make_owm_api_call(struct alert_input in) {
     struct response_buffer rb = { rb_data, 0, INIT_RB_SIZE };
     CURL *curl_hdl = curl_easy_init();
 
-    // Point a response buffer to tell curl where to write
+    // Point to a response buffer to tell curl where to write
     c = curl_easy_setopt(curl_hdl, CURLOPT_WRITEDATA, &rb);
     check_curl_error(c, "CURLOPT_WRITEDATA");
 
-    // Construct the url
-    /* Go to https://home.openweathermap.org/myservices */
-    /* > view > scroll down to Free Tier */
-    char url[MAX_URL_LEN];
-    char *base = "https://api.openweathermap.org/data/2.5/forecast";
-    char *api_key = getenv("OWM_API_KEY");
-    // Will auto-null-terminate
-    /* int bytes = */
-    snprintf(url, sizeof(url)/sizeof(*url),
-             "%s?lat=%f&lon=%f&appid=%s",
-             base, in.lat, in.lon, api_key);
-    /* printf("<%d> bytes written to url: <%s>\n", bytes, url); */
     c = curl_easy_setopt(curl_hdl, CURLOPT_URL, url);
     check_curl_error(c, "CURLOPT_URL");
 
@@ -129,9 +116,29 @@ bool make_owm_api_call(struct alert_input in) {
     curl_easy_getinfo(curl_hdl, CURLINFO_RESPONSE_CODE,
                       &status_code);
     /* printf("HTTP status: %ld\n", status_code); */
+    curl_easy_cleanup(curl_hdl);
+
+    return rb.data;
+}
+
+bool make_owm_api_call(struct alert_input in) {
+
+    // Construct the url
+    /* Go to https://home.openweathermap.org/myservices */
+    /* > view > scroll down to Free Tier */
+    char url[MAX_URL_LEN];
+    char *api_key = getenv("OWM_API_KEY");
+    // Will auto-null-terminate
+    /* int bytes = */
+    snprintf(url, sizeof(url)/sizeof(*url),
+             "https://api.openweathermap.org/data/2.5/forecast"
+             "?lat=%f&lon=%f&appid=%s",
+             in.lat, in.lon, api_key);
+    /* printf("<%d> bytes written to url: <%s>\n", bytes, url); */
+    char *resp = make_http_get(url);
 
     // Parse the JSON response
-    cJSON *json_hdl = cJSON_Parse(rb.data);
+    cJSON *json_hdl = cJSON_Parse(resp);
     char *json_resp_str = cJSON_Print(json_hdl);
     /* printf("response: %s\n", json_resp_str); */
     cJSON_bool has_list = cJSON_HasObjectItem(json_hdl, "list");
@@ -200,27 +207,15 @@ bool make_owm_api_call(struct alert_input in) {
     // Free memory
     free(json_resp_str);
     cJSON_Delete(json_hdl);
-    free(rb.data);
-    curl_easy_cleanup(curl_hdl);
+    free(resp);
 
     return false;
 }
 
 bool make_wapi_api_call(struct alert_input in) {
 
-    // Initialize handles and buffers
-    CURLcode c;
-    char *rb_data = malloc(INIT_RB_SIZE * sizeof(*rb_data));
-    struct response_buffer rb = { rb_data, 0, INIT_RB_SIZE };
-    CURL *curl_hdl = curl_easy_init();
-
-    // Point a response buffer to tell curl where to write
-    c = curl_easy_setopt(curl_hdl, CURLOPT_WRITEDATA, &rb);
-    check_curl_error(c, "CURLOPT_WRITEDATA");
-
     // Construct the url
     char url[MAX_URL_LEN];
-    char *base = "http://api.weatherapi.com/v1";
     char *method = "forecast.json";
     char *city = "Irvine";
     int days = 2;
@@ -228,29 +223,14 @@ bool make_wapi_api_call(struct alert_input in) {
     // Will auto-null-terminate
     /* int bytes = */
     snprintf(url, sizeof(url)/sizeof(*url),
-             "%s/%s?key=%s&q=%s&days=%d",
-             base, method, api_key, city, days);
+             "http://api.weatherapi.com/v1/"
+             "%s?key=%s&q=%s&days=%d",
+             method, api_key, city, days);
     /* printf("<%d> bytes written to url: <%s>\n", bytes, url); */
-    c = curl_easy_setopt(curl_hdl, CURLOPT_URL, url);
-    check_curl_error(c, "CURLOPT_URL");
-
-    // Give Curl custom callback to write to local resp buf
-    c = curl_easy_setopt(curl_hdl, CURLOPT_WRITEFUNCTION,
-                         curl_fwrite_callback);
-    check_curl_error(c, "CURLOPT_WRITEFUNCTION");
-
-    // Execute the call
-    c = curl_easy_perform(curl_hdl);
-    check_curl_error(c, "PERFORM");
-
-    // Get response status code
-    long status_code;
-    curl_easy_getinfo(curl_hdl, CURLINFO_RESPONSE_CODE,
-                      &status_code);
-    /* printf("HTTP status: %ld\n", status_code); */
+    char *resp = make_http_get(url);
 
     // Parse the JSON response
-    cJSON *json_hdl = cJSON_Parse(rb.data);
+    cJSON *json_hdl = cJSON_Parse(resp);
     char *json_resp_str = cJSON_Print(json_hdl);
     /* printf("response: %s\n", json_resp_str); */
     cJSON_bool has_forecast =
@@ -312,10 +292,12 @@ bool make_wapi_api_call(struct alert_input in) {
 
             //// Second Probability of Precipitation (pop)
             cJSON_bool has_chance_of_rain =
-                cJSON_HasObjectItem(hour_item_hdl, "chance_of_rain");
+                cJSON_HasObjectItem(hour_item_hdl,
+                                    "chance_of_rain");
             if (!has_chance_of_rain) { printf("has_chance_of_rain\n"); return false; }
             cJSON *chance_of_rain_hdl =
-                cJSON_GetObjectItem(hour_item_hdl, "chance_of_rain");
+                cJSON_GetObjectItem(hour_item_hdl,
+                                    "chance_of_rain");
             cJSON_bool chance_of_rain_is_number =
                 cJSON_IsNumber(chance_of_rain_hdl);
             if (!chance_of_rain_is_number) { printf("chance_of_rain_is_number\n"); return false; }
@@ -346,55 +328,28 @@ bool make_wapi_api_call(struct alert_input in) {
     // Free memory
     free(json_resp_str);
     cJSON_Delete(json_hdl);
-    free(rb.data);
-    curl_easy_cleanup(curl_hdl);
+    free(resp);
 
     return false;
 }
 
 bool make_wbit_api_call(struct alert_input in) {
 
-    // Initialize handles and buffers
-    CURLcode c;
-    char *rb_data = malloc(INIT_RB_SIZE * sizeof(*rb_data));
-    struct response_buffer rb = { rb_data, 0, INIT_RB_SIZE };
-    CURL *curl_hdl = curl_easy_init();
-
-    // Point a response buffer to tell curl where to write
-    c = curl_easy_setopt(curl_hdl, CURLOPT_WRITEDATA, &rb);
-    check_curl_error(c, "CURLOPT_WRITEDATA");
-
     // Construct the url
     char url[MAX_URL_LEN];
-    char *base = "https://api.weatherbit.io/v2.0/forecast/daily";
     int days = 2;
     char *api_key = getenv("WBIT_API_KEY");
     // Will auto-null-terminate
     /* int bytes = */
     snprintf(url, sizeof(url)/sizeof(*url),
-             "%s?key=%s&days=%d&lat=%f&lon=%f",
-             base, api_key, days, in.lat, in.lon);
+             "https://api.weatherbit.io/v2.0/forecast/daily?"
+             "key=%s&days=%d&lat=%f&lon=%f",
+             api_key, days, in.lat, in.lon);
     /* printf("<%d> bytes written to url: <%s>\n", bytes, url); */
-    c = curl_easy_setopt(curl_hdl, CURLOPT_URL, url);
-    check_curl_error(c, "CURLOPT_URL");
-
-    // Give Curl custom callback to write to local resp buf
-    c = curl_easy_setopt(curl_hdl, CURLOPT_WRITEFUNCTION,
-                         curl_fwrite_callback);
-    check_curl_error(c, "CURLOPT_WRITEFUNCTION");
-
-    // Execute the call
-    c = curl_easy_perform(curl_hdl);
-    check_curl_error(c, "PERFORM");
-
-    // Get response status code
-    long status_code;
-    curl_easy_getinfo(curl_hdl, CURLINFO_RESPONSE_CODE,
-                      &status_code);
-    /* printf("HTTP status: %ld\n", status_code); */
+    char *resp = make_http_get(url);
 
     // Parse the JSON response
-    cJSON *json_hdl = cJSON_Parse(rb.data);
+    cJSON *json_hdl = cJSON_Parse(resp);
     char *json_resp_str = cJSON_Print(json_hdl);
     /* printf("response: %s\n", json_resp_str); */
     cJSON_bool has_data =
@@ -476,8 +431,7 @@ bool make_wbit_api_call(struct alert_input in) {
     // Free memory
     free(json_resp_str);
     cJSON_Delete(json_hdl);
-    free(rb.data);
-    curl_easy_cleanup(curl_hdl);
+    free(resp);
 
     return false;
 }
@@ -493,7 +447,7 @@ int main() {
     /* The latitude of Irvine, California is approximately */
     /* 33.6695° N and the longitude is about -117.823° W. */
     struct alert_input in = { 33.6695, -117.823 };
-    printf("Query for lat={%f}, lon={%f}\n", in.lat, in.lon);
+    /* printf("Query for lat={%f}, lon={%f}\n", in.lat, in.lon); */
     struct alert_output out = { false, false, false };
 
     // Make api calls
