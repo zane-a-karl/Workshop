@@ -24,6 +24,7 @@
  *  - [X] pull out httpbin test into a local testing file
  *  - [X] consolidate curl api requests in http_get() fn
  *  - [X] Fix logic errors in main response computation logic
+ *  - [X] Add test.c file with your output tests
  */
 #include <curl/curl.h>
 #include <cjson/cJSON.h>
