@@ -22,4 +22,4 @@ TODO:
  [X] Add test.c file with your output tests
  [X] Capitalize all todos and remove redundant bullets
  [X] Move todos into independent markdown file
- [ ] Re-imagine API response traversal: make structs to hold the path
+ [X] Re-imagine API response traversal: make structs to hold the path

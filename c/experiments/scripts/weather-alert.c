@@ -33,6 +33,38 @@ struct response_buffer {
     size_t size_reserved;
 };
 
+enum json_step_type { KEY, INDEX };
+
+struct json_path_step {
+    enum json_step_type type;
+    union {
+        const char *key;
+        double    index;
+    };
+};
+
+enum json_field_type { STRING, NUMBER, NOT_FOUND };
+
+struct json_result_field {
+    enum json_field_type type;
+    union {
+        const char *string;
+        const double number;
+    };
+};
+
+struct json_result_field *
+get_json_path_field(cJSON *root,
+                    struct json_path_step *path,
+                    size_t path_length) {
+
+    // loop through the path until path_length
+    // check that the next step exists
+    // check that the next step's type is correct
+    // get a handle to the step and save it for the next iteration
+    return NULL;
+}
+
 void check_curl_error(CURLcode c, char *subject) {
     if (c != CURLE_OK) {
         printf("Curl <%s> exited with error code: %d\n", subject, c);
