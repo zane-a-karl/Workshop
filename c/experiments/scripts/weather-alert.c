@@ -134,9 +134,11 @@ char *make_http_get(char *url) {
                       &status_code);
     if (status_code != 200) {
         printf("HTTP status: %ld\n", status_code);
+        curl_easy_cleanup(curl_hdl);
+        return NULL;
     }
-    curl_easy_cleanup(curl_hdl);
 
+    curl_easy_cleanup(curl_hdl);
     return rb.data; /* Caller must free this memory */
 }
 
@@ -158,7 +160,7 @@ bool make_owm_api_call(struct alert_input in) {
         goto CLEANUP_OWM3;
     }
     char *resp = make_http_get(url);
-    if (resp == NULL) { printf("make_http_get\n"); goto CLEANUP_OWM2; }
+    if (resp == NULL) { printf("owm make_http_get\n"); goto CLEANUP_OWM2; }
 
     // Parse the JSON response
     cJSON *json_hdl = cJSON_Parse(resp);
@@ -187,32 +189,7 @@ bool make_owm_api_call(struct alert_input in) {
         if ((time_t)(dt) > now + day_in_sec) { continue; }
 
         // Else check rain conditions
-
-        //// First Main Weather Designation
-        cJSON_bool has_weather =
-            cJSON_HasObjectItem(list_item_hdl, "weather");
-        if (!has_weather) { printf("has_weather\n"); goto CLEANUP_OWM1; }
-        cJSON *weather_hdl =
-            cJSON_GetObjectItem(list_item_hdl, "weather");
-        int weather_size = cJSON_GetArraySize(weather_hdl);
-        int main_rain = -1;
-
-        for (int j = 0; j < weather_size; j++) {
-            cJSON *weather_item_hdl =
-                cJSON_GetArrayItem(weather_hdl, j);
-            cJSON_bool has_main =
-                cJSON_HasObjectItem(weather_item_hdl, "main");
-            if (!has_main) { printf("has_main\n"); goto CLEANUP_OWM1; }
-            cJSON *main_hdl =
-                cJSON_GetObjectItem(weather_item_hdl, "main");
-            cJSON_bool main_is_string = cJSON_IsString(main_hdl);
-            if (!main_is_string) { printf("main_is_string\n"); goto CLEANUP_OWM1; }
-            char *main = cJSON_GetStringValue(main_hdl);
-            main_rain = strncmp(main, "Rain", 4 * sizeof(char));
-            if (0 == main_rain) { break; }
-        }
-
-        //// Second Probability of Precipitation (pop)
+        //// First Probability of Precipitation (pop)
         cJSON_bool has_pop =
             cJSON_HasObjectItem(list_item_hdl, "pop");
         if (!has_pop) { printf("has_pop\n"); goto CLEANUP_OWM1; }
@@ -222,13 +199,8 @@ bool make_owm_api_call(struct alert_input in) {
         // Is a probability 0-1
         double pop = cJSON_GetNumberValue(pop_hdl);
 
-        //// Third has a 'rain' item
-        /* cJSON_bool has_rain = */
-        /*     cJSON_HasObjectItem(list_item_hdl, "rain"); */
-        /* if (!has_rain) { printf("has_rain\n"); goto CLEANUP_OWM1; } */
-
         // Combine to check for rain
-        if (0 == main_rain && pop > 0.55 /* && has_rain */) {
+        if (pop > 0.55) {
             free(resp);
             cJSON_Delete(json_hdl);
             return true;
@@ -263,7 +235,7 @@ bool make_wapi_api_call(struct alert_input in) {
         goto CLEANUP_WAPI3;
     }
     char *resp = make_http_get(url);
-    if (resp == NULL) { printf("make_http_get\n"); goto CLEANUP_WAPI2; }
+    if (resp == NULL) { printf("wapi make_http_get\n"); goto CLEANUP_WAPI2; }
 
     // Parse the JSON response
     cJSON *json_hdl = cJSON_Parse(resp);
@@ -311,24 +283,7 @@ bool make_wapi_api_call(struct alert_input in) {
             if ((time_t)(time_epoch) > now + day_in_sec) { continue; }
 
             // Else check rain conditions
-            //// First Main Weather Designation
-            cJSON_bool has_condition =
-                cJSON_HasObjectItem(hour_item_hdl, "condition");
-            if (!has_condition) { printf("has_condition\n"); goto CLEANUP_WAPI1; }
-            cJSON *condition_hdl =
-                cJSON_GetObjectItem(hour_item_hdl, "condition");
-            cJSON_bool has_text =
-                cJSON_HasObjectItem(condition_hdl, "text");
-            if (!has_text) { printf("has_text\n"); goto CLEANUP_WAPI1; }
-            cJSON *text_hdl =
-                cJSON_GetObjectItem(condition_hdl, "text");
-            cJSON_bool text_is_string = cJSON_IsString(text_hdl);
-            if (!text_is_string) { printf("text_is_string\n"); goto CLEANUP_WAPI1; }
-            char *text = cJSON_GetStringValue(text_hdl);
-            int text_rain = strncmp(text, "Rain",
-                                    4 * sizeof(char));
-
-            //// Second Probability of Precipitation (pop)
+            //// First Probability of Precipitation (pop)
             cJSON_bool has_chance_of_rain =
                 cJSON_HasObjectItem(hour_item_hdl,
                                     "chance_of_rain");
@@ -355,9 +310,7 @@ bool make_wapi_api_call(struct alert_input in) {
                 cJSON_GetNumberValue(will_it_rain_hdl);
 
             // Combine to check for rain
-            if (0 == text_rain &&
-                chance_of_rain > 55 &&
-                will_it_rain != 0) {
+            if (chance_of_rain > 55 && will_it_rain != 0) {
                 free(resp);
                 cJSON_Delete(json_hdl);
                 return true;
@@ -391,7 +344,7 @@ bool make_wbit_api_call(struct alert_input in) {
         goto CLEANUP_WBIT3;
     }
     char *resp = make_http_get(url);
-    if (resp == NULL) { printf("make_http_get\n"); goto CLEANUP_WBIT2; }
+    if (resp == NULL) { printf("wbit make_http_get\n"); goto CLEANUP_WBIT2; }
 
     // Parse the JSON response
     cJSON *json_hdl = cJSON_Parse(resp);
@@ -425,25 +378,7 @@ bool make_wbit_api_call(struct alert_input in) {
         }
 
         // Else check weather conditions
-        //// First Weather Description
-        cJSON_bool has_weather =
-            cJSON_HasObjectItem(data_item_hdl, "weather");
-        if (!has_weather) { printf("has_weather\n"); goto CLEANUP_WBIT1; }
-        cJSON *weather_hdl =
-            cJSON_GetObjectItem(data_item_hdl, "weather");
-        cJSON_bool has_description =
-            cJSON_HasObjectItem(weather_hdl, "description");
-        if (!has_description) { printf("has_description\n"); goto CLEANUP_WBIT1; }
-        cJSON *description_hdl =
-            cJSON_GetObjectItem(weather_hdl, "description");
-        cJSON_bool description_is_string =
-            cJSON_IsString(description_hdl);
-        if (!description_is_string) { printf("description_is_string\n"); goto CLEANUP_WBIT1; }
-        char *description = cJSON_GetStringValue(description_hdl);
-        int description_rain = strncmp(description, "Rain",
-                                       4 * sizeof(char));
-
-        //// Second Probability of Precipitation (pop)
+        //// First Probability of Precipitation (pop)
         cJSON_bool has_pop =
             cJSON_HasObjectItem(data_item_hdl, "pop");
         if (!has_pop) { printf("has_pop\n"); goto CLEANUP_WBIT1; }
@@ -464,9 +399,7 @@ bool make_wbit_api_call(struct alert_input in) {
         double precip = cJSON_GetNumberValue(precip_hdl);
 
         // Combine to check for rain
-        if (0 == description_rain &&
-            pop > 55 &&
-            precip > 0) {
+        if (pop > 55 && precip > 0) {
             free(resp);
             cJSON_Delete(json_hdl);
             return true;
