@@ -14,7 +14,7 @@
 #include <string.h>
 
 #define INIT_RB_SIZE 256
-#define MAX_URL_LEN 512
+#define MAX_URL_LEN  512
 
 struct alert_input {
     double lat;
@@ -22,13 +22,13 @@ struct alert_input {
 };
 
 struct alert_output {
-    bool owm_will_rain;
+    bool  owm_will_rain;
     bool wapi_will_rain;
     bool wbit_will_rain;
 };
 
 struct response_buffer {
-    char *data;
+    char           *data;
     size_t size_assigned;
     size_t size_reserved;
 };
@@ -38,8 +38,8 @@ enum json_step_type { KEY, INDEX };
 struct json_path_step {
     enum json_step_type type;
     union {
-        const char *key;
-        double    index;
+        const char *key;        /* for cJSON_GetObjectItem */
+        double    index;        /* for cJSON_GetArrayItem */
     };
 };
 
@@ -48,20 +48,54 @@ enum json_field_type { STRING, NUMBER, NOT_FOUND };
 struct json_result_field {
     enum json_field_type type;
     union {
-        const char *string;
-        const double number;
+        char  *string;
+        double number;
     };
 };
 
 struct json_result_field *
-get_json_path_field(cJSON *root,
+get_json_path_field(cJSON             *root_hdl,
                     struct json_path_step *path,
-                    size_t path_length) {
+                    size_t          path_length) {
+
+    cJSON *prv_hdl = root_hdl;
+    struct json_result_field *result;
 
     // loop through the path until path_length
-    // check that the next step exists
+    for (size_t i = 0; i < path_length; i++) {
+        // check the next step type & that it exists
+        cJSON_bool has_step;
+        if (path[i].type == KEY) {
+            has_step = cJSON_HasObjectItem(prv_hdl, path[i].key);
+            if (!has_step) { printf("has_%s\n", path[i].key); return NULL; }
+            // get a handle to the step and save it for the next itr
+            prv_hdl = cJSON_GetObjectItem(prv_hdl, path[i].key);
+        } else { /* path[i].type == INDEX */
+            // get array size
+            int array_size = cJSON_GetArraySize(prv_hdl);
+            // get a handle to new step
+            for (int j = path[i].index; j < array_size; j++) {
+                prv_hdl = cJSON_GetArrayItem(prv_hdl, j);
+                result = get_json_path_field(prv_hdl,
+                                             path + i + 1,
+                                             path_length);
+            }
+        }
+
+    }
+
     // check that the next step's type is correct
-    // get a handle to the step and save it for the next iteration
+    if (cJSON_IsString(prv_hdl)) {
+        result->type = STRING;
+        result->string = cJSON_GetStringValue(prv_hdl);
+    } else if (cJSON_IsNumber(prv_hdl)) {
+        result->type = NUMBER;
+        result->number = cJSON_GetNumberValue(prv_hdl);
+    } else {
+        result->type = NOT_FOUND;
+        printf("Step NOT FOUND\n");
+    }
+
     return NULL;
 }
 
@@ -72,9 +106,9 @@ void check_curl_error(CURLcode c, char *subject) {
 }
 
 size_t curl_fwrite_callback(const void *restrict ptr,
-                            size_t size,
-                            size_t nitems,
-                            void *restrict userdata) {
+                            size_t              size,
+                            size_t            nitems,
+                            void  *restrict userdata) {
 
     struct response_buffer *rb =
         (struct response_buffer *)userdata;
@@ -140,6 +174,69 @@ char *make_http_get(char *url) {
 
     curl_easy_cleanup(curl_hdl);
     return rb.data; /* Caller must free this memory */
+}
+
+bool reimagined_owm_api_call(struct alert_input in) {
+
+    // Construct the url
+    /* Go to https://home.openweathermap.org/myservices */
+    /* > view > scroll down to Free Tier */
+    char url[MAX_URL_LEN];
+    char *api_key = getenv("OWM_API_KEY");
+    // -1 b/c will auto-null-terminate
+    int bytes =
+        snprintf(url, MAX_URL_LEN - 1,
+                 "https://api.openweathermap.org/data/2.5/forecast"
+                 "?lat=%f&lon=%f&appid=%s",
+                 in.lat, in.lon, api_key);
+    if (bytes >= MAX_URL_LEN || bytes < 0) {
+        printf("<%d> bytes written to url: <%s>\n", bytes, url);
+        goto CLEANUP_OWM3;
+    }
+    char *resp = make_http_get(url);
+    if (resp == NULL) { printf("owm make_http_get\n"); goto CLEANUP_OWM2; }
+
+    // Parse the JSON response
+    cJSON *json_hdl = cJSON_Parse(resp);
+    if (json_hdl == NULL) { printf("json_hdl\n"); goto CLEANUP_OWM1; }
+    char *json_resp_str = cJSON_Print(json_hdl);
+    /* printf("response: %s\n", json_resp_str); */
+    free(json_resp_str);
+
+    struct json_path_step path[3];
+    path[0].type =   KEY; path[0].key   = "list";
+    path[1].type = INDEX; path[1].index =      0;
+    path[2].type =   KEY; path[2].key =     "dt";
+    struct json_result_field *dt =
+        get_json_path_field(json_hdl, path, 3);
+    time_t now = time(NULL);
+    time_t day_in_sec = 60 * 60 * 24;
+    if ((time_t)(dt->number) > now + day_in_sec) {
+        printf("owm out of date bounds\n");
+        goto CLEANUP_OWM1;
+    }
+
+    // Check rain conditions
+    //// First Probability of Precipitation (pop)
+    path[2].type = KEY; path[2].key = "pop";
+    // Is a probability 0-1
+    struct json_result_field *pop =
+        get_json_path_field(json_hdl, path, 3);
+
+        // Combine to check for rain
+        if (pop->number > 0.55) {
+            free(resp);
+            cJSON_Delete(json_hdl);
+            return true;
+        }
+
+    // Free memory
+ CLEANUP_OWM1:
+    cJSON_Delete(json_hdl);
+ CLEANUP_OWM2:
+    free(resp);
+ CLEANUP_OWM3:
+    return false;
 }
 
 bool make_owm_api_call(struct alert_input in) {

@@ -24,3 +24,4 @@ TODO:
  [X] Move todos into independent markdown file
  [X] Re-imagine API response traversal: make structs to hold the path
  [X] Remove description metric processing -- it's not very reliable
+ [X] Experiment with get_json_field_path to traverse json tree
