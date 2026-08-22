@@ -25,3 +25,4 @@ TODO:
  [X] Re-imagine API response traversal: make structs to hold the path
  [X] Remove description metric processing -- it's not very reliable
  [X] Experiment with get_json_field_path to traverse json tree
+ [X] Replace manual for loops with cJSON_ArrayForEach calls

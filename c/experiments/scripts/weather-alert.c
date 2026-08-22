@@ -268,12 +268,11 @@ bool make_owm_api_call(struct alert_input in) {
     cJSON_bool has_list = cJSON_HasObjectItem(json_hdl, "list");
     if (!has_list) { printf("has_list\n"); goto CLEANUP_OWM1; }
     cJSON *list_hdl = cJSON_GetObjectItem(json_hdl, "list");
-    int list_size = cJSON_GetArraySize(list_hdl);
     time_t now = time(NULL);
     time_t day_in_sec = 60 * 60 * 24;
 
-    for (int i = 0; i < list_size; i++) {
-        cJSON *list_item_hdl = cJSON_GetArrayItem(list_hdl, i);
+    cJSON *list_item_hdl;
+    cJSON_ArrayForEach(list_item_hdl, list_hdl) {
         cJSON_bool has_dt =
             cJSON_HasObjectItem(list_item_hdl, "dt");
         if (!has_dt) { printf("has_dt\n"); goto CLEANUP_OWM1; }
@@ -349,22 +348,19 @@ bool make_wapi_api_call(struct alert_input in) {
     if (!has_forecastday) { printf("has_forecastday\n"); goto CLEANUP_WAPI1; }
     cJSON *forecastday_hdl =
         cJSON_GetObjectItem(forecast_hdl, "forecastday");
-    int forecastday_size = cJSON_GetArraySize(forecastday_hdl);
     time_t now = time(NULL);
     time_t day_in_sec = 60 * 60 * 24;
 
-    for (int i = 0; i < forecastday_size; i++) {
-        cJSON *forecastday_item_hdl =
-            cJSON_GetArrayItem(forecastday_hdl, i);
+    cJSON *forecastday_item_hdl;
+    cJSON_ArrayForEach(forecastday_item_hdl, forecastday_hdl) {
         cJSON_bool has_hour =
             cJSON_HasObjectItem(forecastday_item_hdl, "hour");
         if (!has_hour) { printf("has_hour\n"); goto CLEANUP_WAPI1; }
         cJSON *hour_hdl =
             cJSON_GetObjectItem(forecastday_item_hdl, "hour");
-        int hour_size = cJSON_GetArraySize(hour_hdl);
 
-        for (int j = 0; j < hour_size; j++) {
-            cJSON *hour_item_hdl = cJSON_GetArrayItem(hour_hdl, j);
+        cJSON *hour_item_hdl;
+        cJSON_ArrayForEach(hour_item_hdl, hour_hdl) {
             cJSON_bool has_time_epoch =
                 cJSON_HasObjectItem(hour_item_hdl, "time_epoch");
             if (!has_time_epoch) { printf("has_time_epoch\n"); goto CLEANUP_WAPI1; }
@@ -453,13 +449,11 @@ bool make_wbit_api_call(struct alert_input in) {
         cJSON_HasObjectItem(json_hdl, "data");
     if (!has_data) { printf("has_data\n"); goto CLEANUP_WBIT1; }
     cJSON *data_hdl = cJSON_GetObjectItem(json_hdl, "data");
-    int data_size = cJSON_GetArraySize(data_hdl);
     time_t now = time(NULL);
     time_t day_in_sec = 60 * 60 * 24;
-    /* struct tm *today = localtime(&now); */
 
-    for (int i = 0; i < data_size; i++) {
-        cJSON *data_item_hdl = cJSON_GetArrayItem(data_hdl, i);
+    cJSON *data_item_hdl;
+    cJSON_ArrayForEach(data_item_hdl, data_hdl) {
         cJSON_bool has_ts =
             cJSON_HasObjectItem(data_item_hdl, "ts");
         if (!has_ts) { printf("has_ts\n"); goto CLEANUP_WBIT1; }
